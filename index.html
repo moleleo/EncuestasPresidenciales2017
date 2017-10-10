@@ -49,22 +49,60 @@
 		.item {
 			font:12px sans-serif;
 			float:left;
-			margin-top: 6px;
+			margin-top: 5px;
 			margin-right:100px;
 		}
+    
+    .line {
+      stroke-width: 6px;
+      fill: none;
+    }    
+    
+    div.tooltip {	
+      position: absolute;			
+      text-align: center;			
+      width: 120px;					
+      height: 36px;					
+      padding: 2px;				
+      font: 10px sans-serif;		
+      background: lightgray;	
+      border: 0px;		
+      border-radius: 8px;			
+      pointer-events: none;			
+    }    
 
+    div.buttons  {
+			font:15px sans-serif;
+			font-weight:bold;  
+      position: absolute;
+      left: 10%;
+    }    
+    
   </style>
 </head>
 
 <body>
 <div id="chart"></div>
 <br>
-<button type="button" onclick="streamGraph()">StreamGraph</button>
-<button type="button" onclick="stackedArea()">Stacked Area</button>
-
+<div id="buttons" class="buttons">Ver información como:     
+  <button type="button" onclick="streamGraph()">Stream Graph</button>
+  <button type="button" onclick="stackedArea()">Stacked Area</button>
+  <button type="button" onclick="areaChart()">Area Chart</button>
+</div>
   <script>
 
-		var data = [
+		var svg; 
+		var x;
+		var y;
+		var color = d3.scaleOrdinal(d3.schemeCategory20);	      
+		var series;
+    var stack;		
+    
+    var divTooltip = d3.select("body").append("div")	
+      .attr("class", "tooltip")				
+      .style("opacity", 0);       
+    
+    var data = [
 			{day: new Date(2017, 7, 2),  "Sergio Fajardo": 10.3,  "Germán Vargas Lleras": 5.3,  "Claudia Lopez": 4.9,   "Gustavo Petro":14.3, "Juan Manuel Galán":4.9,  "Clara Lopez":6.7,  "No Sabe - No Responde": 31.4},
 			{day: new Date(2017, 7, 23), "Sergio Fajardo": 8,     "Germán Vargas Lleras": 13,   "Claudia Lopez": 10,    "Gustavo Petro":13,   "Juan Manuel Galán":5,    "Clara Lopez":7,    "No Sabe - No Responde": 17},
 			{day: new Date(2017, 8, 12), "Sergio Fajardo": 9.6,   "Germán Vargas Lleras": 6.7,  "Claudia Lopez": 5.3,   "Gustavo Petro":11.2, "Juan Manuel Galán":5.6,  "Clara Lopez":8.3,  "No Sabe - No Responde": 29.9},
@@ -77,18 +115,22 @@
 
 		var width = document.body.clientWidth - margin.left - margin.right;
 		var height = 350 - margin.top - margin.bottom;    
+    
+    var line = d3.line()
+			.x(function(d) { return x(d.data.day); })
+			.y(function(d) { return y(d[1]); })
+      .curve(d3.curveCatmullRom);
 	
 		var area = d3.area()
 			.x(function(d) { return x(d.data.day); })
 			.y0(function(d) { return y(d[0]); })
-			.y1(function(d) { return y(d[1]); })
-			.curve(d3.curveCatmullRom);
-			//.curve(d3.curveMonotoneX);
-			//.curve(d3.curveCardinal);
-			//.curve(d3.curveStep);
-			//.curve(d3.curveBasis);
+			.y1(function(d) { return y(d[1]); });
 
-//		var xAxis = d3.axisBottom(x);
+    var valueline = d3.line()
+      .x(function(d) { return x(d.data.day); })
+      .y(function(d) { return y(d[1]-d[0]); });
+      
+    var monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];      
 			
 		function createLegend() {
 		
@@ -122,25 +164,12 @@
 	
     function streamGraph( ) { 
 
-      var tooltip = d3.select("body")
-        .append("div")
-        .attr("class", "remove")
-        .style("position", "absolute")
-        .style("z-index", "20")
-        .style("visibility", "hidden")
-        .style("top", "30px")
-        .style("left", "65px");
-      
-      color = d3.scaleOrdinal(d3.schemeCategory10);	      
-
       var datearray = [];
 
       stack = d3.stack()
         .keys(["Sergio Fajardo", "Germán Vargas Lleras", "Claudia Lopez", "Gustavo Petro", "Juan Manuel Galán", "Clara Lopez", "No Sabe - No Responde"])
         .order(d3.stackOrderReverse)
-        //.order(d3.stackOrderNone)
         .offset(d3.stackOffsetWiggle);
-				//.offset(d3.stackOffsetNone);				
               
       series = stack(data);
               
@@ -149,7 +178,172 @@
         .range([0, width]);
 
       y = d3.scaleLinear()
-        .domain([0, 100])
+        .domain([0, 95])
+        .range([height-5, 0]);
+				
+      d3.select("svg").remove().exit();
+        
+      svg = d3.select("#chart").append("svg")
+        .attr("width", width + (margin.left*2))
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+
+      svg.selectAll(".layer")
+        .data(series)
+        .enter().append("path")
+          .attr("cursor", "crosshair")
+          .attr("class", "layer")
+          .attr("d", function(d) {
+            return area(d); 
+          })
+          .style("fill", function(d, i) { return color(i); });
+
+      svg.append("g")
+        .attr("class", "axisBottom")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));   
+
+      svg.append("g")
+        .attr("class", "axisLeft")
+        .call(d3.axisLeft(y));     
+
+      svg.append("g")
+        .attr("class", "axisRight")
+        .attr("transform", "translate(" + width + ",0)")
+        .call(d3.axisRight(y));    
+
+      var val;
+
+      svg.selectAll(".layer")
+        .attr("opacity", 0.8)
+        .on("mouseover", function(d, i) {
+          svg.selectAll(".layer").transition()
+          .duration(250)
+          .attr("opacity", function(d, j) {
+            return j != i ? 0.4 : 1;
+          })
+        })
+        .on("mousemove", function(d, i) {
+          mousex = d3.mouse(this);
+          mousex = mousex[0];
+          var invertedx = x.invert(mousex);
+          year = invertedx.getYear() + 1900;
+          month = invertedx.getMonth() + 1;
+          if (month < 10) {
+            month = "0" + month;
+          }
+          day = invertedx.getDate();  
+          if (day < 10) {
+            day = "0" + day;
+          }
+          invertedx =  "" + year + month + day;
+          var selected = (d);
+          for (var k = 0; k < selected.length; k++) {
+            year = selected[k].data.day.getYear() + 1900;
+            month = selected[k].data.day.getMonth() + 1;
+            if (month < 10) {
+              month = "0" + month;
+            }
+            day = selected[k].data.day.getDate();
+            if (day < 10) {
+              day = "0" + day;
+            }            
+            datearray[k] =  "" + year + month + day;
+          }
+          mousedate = datearray.indexOf(invertedx);
+          if ( mousedate > -1) {
+            year = datearray[mousedate].substring(0, 4);
+            month = datearray[mousedate].substring(4, 6);
+            day = datearray[mousedate].substring(6, 8);            
+            
+            var val = d[mousedate][1] - d[mousedate][0];
+            val = val.toFixed(1);
+            divTooltip.transition()		
+              .duration(500)		
+              .style("opacity", .9);		
+            divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
+              .style("left", (d3.event.pageX) + "px")		
+              .style("top", (d3.event.pageY - 28) + "px");	
+          } else {
+            divTooltip.transition()		
+              .duration(100)		
+              .style("opacity", 0);		
+          }
+        })
+        .on("mouseout", function(d, i) {
+          svg.selectAll(".layer")
+            .transition()
+            .duration(250)
+            .attr("opacity", 0.8);
+        }); 
+				
+        d3.selectAll(".remove").remove().exit();
+          
+        vertical = d3.select("body").append("div")
+          .attr("class", "remove")
+          .style("position", "absolute")
+          .style("z-index", "20")
+          .style("width", "0.5px")
+          .style("height", (height-4) +  "px")
+          .style("top", (margin.top) + "px")
+          .style("bottom", margin.bottom + "px")
+          .style("background", "#fcfcfc");
+            
+        d3.select("svg") 
+        .on("mousemove", function(){ 
+          mousex = d3.mouse(this);
+          mousex = mousex[0] + 5;
+          vertical.style("left", mousex + "px" );
+        })
+        .on("mouseover", function(){ 
+          mousex = d3.mouse(this);
+          mousex = mousex[0] + 5;
+          vertical.style("left", mousex + "px");
+        });    
+                 
+        var curtain = svg.append('rect')
+          .attr('x', -0.99 * width)
+          .attr('y', -0.99 * height)
+          .attr('height', height)
+          .attr('width', width * 0.98)
+          .attr('class', 'curtain')
+          .attr("transform", "translate(" + width + "," + height + ")")  
+          .attr('transform', 'rotate(180)')
+          .style('fill', '#fcfcfc')    
+          .transition()
+            .delay(1000)
+            .duration(1500)          
+            .attr('width', 0);  
+			
+    }
+	
+    function stackedArea( ) { 
+
+      var tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "remove")
+        .style("position", "absolute")
+        .style("z-index", "20")
+        .style("visibility", "hidden")
+        .style("top", "30px")
+        .style("left", "65px");
+
+      var datearray = [];
+
+      stack = d3.stack()
+        .keys(["Sergio Fajardo", "Germán Vargas Lleras", "Claudia Lopez", "Gustavo Petro", "Juan Manuel Galán", "Clara Lopez", "No Sabe - No Responde"])
+        .order(d3.stackOrderReverse)
+				.offset(d3.stackOffsetNone);				
+              
+      series = stack(data);
+              
+      x = d3.scaleTime()
+        .domain([new Date(2017, 7, 1), new Date(2017, 8, 30)])
+        .range([0, width]);
+
+      y = d3.scaleLinear()
+        .domain([0, 80])
         .range([height-5, 0]);
 				
       d3.select("svg").remove().exit();
@@ -184,15 +378,16 @@
         .attr("transform", "translate(" + width + ",0)")
         .call(d3.axisRight(y));    
 
+        
       var val;
 
       svg.selectAll(".layer")
-        .attr("opacity", 1)
+        .attr("opacity", 0.8)
         .on("mouseover", function(d, i) {
           svg.selectAll(".layer").transition()
           .duration(250)
           .attr("opacity", function(d, j) {
-            return j != i ? 0.4 : 1;
+            return j != i ? 0.4 : 0.8;
           })
         })
         .on("mousemove", function(d, i) {
@@ -201,40 +396,57 @@
           var invertedx = x.invert(mousex);
           year = invertedx.getYear() + 1900;
           month = invertedx.getMonth() + 1;
+          if (month < 10) {
+            month = "0" + month;
+          }
           day = invertedx.getDate();  
+          if (day < 10) {
+            day = "0" + day;
+          }
           invertedx =  "" + year + month + day;
           var selected = (d);
           for (var k = 0; k < selected.length; k++) {
             year = selected[k].data.day.getYear() + 1900;
             month = selected[k].data.day.getMonth() + 1;
+            if (month < 10) {
+              month = "0" + month;
+            }
             day = selected[k].data.day.getDate();
+            if (day < 10) {
+              day = "0" + day;
+            }            
             datearray[k] =  "" + year + month + day;
           }
           mousedate = datearray.indexOf(invertedx);
           if ( mousedate > -1) {
+            year = datearray[mousedate].substring(0, 4);
+            month = datearray[mousedate].substring(4, 6);
+            day = datearray[mousedate].substring(6, 8);            
             var val = d[mousedate][1] - d[mousedate][0];
             val = val.toFixed(1);
-            d3.select(this)
-              .classed("hover", true)
-              .attr("stroke-width", "5.5px"), 
-              tooltip.html( "<p>" + d.key + "<br>" + val + "</p>" ).style("visibility", "visible");
-          }
+            divTooltip.transition()		
+              .duration(500)		
+              .style("opacity", .9);		
+            divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
+              .style("left", (d3.event.pageX) + "px")		
+              .style("top", (d3.event.pageY - 28) + "px");	
+          } else {
+            divTooltip.transition()		
+              .duration(100)		
+              .style("opacity", 0);		
+          }          
         })
         .on("mouseout", function(d, i) {
           svg.selectAll(".layer")
             .transition()
             .duration(250)
-            .attr("opacity", "1");
-          d3.select(this)
-            .classed("hover", false)
-            .attr("stroke-width", "0px"), tooltip.html( "<p>" + d.key + "<br>" + val + "</p>" ).style("visibility", "hidden");
+            .attr("opacity", 0.8);
         }); 
 				
         d3.selectAll(".remove").remove().exit();
           
         vertical = d3.select("body").append("div")
           .attr("class", "remove")
-          //.attr('width', width * 0.98)
           .style("position", "absolute")
           .style("z-index", "20")
           .style("width", "0.5px")
@@ -242,10 +454,8 @@
           .style("top", (margin.top) + "px")
           .style("bottom", margin.bottom + "px")
           .style("background", "#fcfcfc");
-          //.style("background", "#000");  
             
-        //d3.select(".leonardo") //body
-        d3.select("svg") //body
+        d3.select("svg") 
         .on("mousemove", function(){ 
           mousex = d3.mouse(this);
           mousex = mousex[0] + 5;
@@ -265,7 +475,6 @@
           .attr('class', 'curtain')
           .attr("transform", "translate(" + width + "," + height + ")")  
           .attr('transform', 'rotate(180)')
-          //.style('fill', 'lightgray')
           .style('fill', '#fcfcfc')    
           .transition()
             .delay(1000)
@@ -273,121 +482,74 @@
             .attr('width', 0);  
 			
     }
+	
+    function areaChart( ) { 
 
-		var svg; 
-		var stack;
-		var x;
-		var y;
-		var color;	      
-		var series;
-		
-    streamGraph();  
-		createLegend();
-		
-		function stackedArea() {
+      var tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "remove")
+        .style("position", "absolute")
+        .style("z-index", "20")
+        .style("visibility", "hidden")
+        .style("top", "30px")
+        .style("left", "65px");
 
-      stack.offset(d3.stackOffsetNone);				
-      series = stack(data);	
-			
-			/*
+      var datearray = [];
+
       stack = d3.stack()
         .keys(["Sergio Fajardo", "Germán Vargas Lleras", "Claudia Lopez", "Gustavo Petro", "Juan Manuel Galán", "Clara Lopez", "No Sabe - No Responde"])
         .order(d3.stackOrderReverse)
-        //.order(d3.stackOrderNone)
-        .offset(d3.stackOffsetWiggle);
-				//.offset(d3.stackOffsetNone);				
+				.offset(d3.stackOffsetNone);				
               
       series = stack(data);
-			*/
-			
-		
-      x.domain([new Date(2017, 7, 1), new Date(2017, 9, 30)])
-      y.domain([0, 200]);
+              
+      x = d3.scaleTime()
+        .domain([new Date(2017, 7, 1), new Date(2017, 8, 30)])
+        .range([0, width]);
 
-      svg = d3.select("#chart").transition();
-
-			/*
-			svg.select(".line")   // change the line
-				.duration(750)
-				.attr("d", valueline(data));
-			*/
-			
-			console.log(series);
-			
-      svg.select(".layer")
-				.duration(750)
-				.call(area(series));
+      y = d3.scaleLinear()
+        .domain([0, 32.5])
+        .range([height-5, 0]);
 				
-//				.attr("d", function(series) {
-//            return area(series); 
-//				});
-				
-/*
+      d3.select("svg").remove().exit();
 
-      svg.selectAll(".layer")
+      svg = d3.select("#chart").append("svg")
+        .attr("width", width + (margin.left*2))
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+
+      svg.selectAll(".line")    
         .data(series)
         .enter().append("path")
           .attr("cursor", "crosshair")
-          .attr("class", "layer")
-          .attr("d", function(d) {
-            return area(d); 
-          })
-          .style("fill", function(d, i) { return color(i); });
+          .attr("class", "line")
+          .attr("d", valueline)
+          .style("stroke", function(d, i) { return color(i); }); ;  
 
-*/				
-			
-			svg.select(".axisBottom") // change the x axis
-				.duration(750)
-				.call(d3.axisBottom(x));
+      svg.append("g")
+        .attr("class", "axisBottom")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));   
 
-			svg.select(".axisLeft") // change the y axis
-				.duration(750)
-				.call(d3.axisLeft(y));
+      svg.append("g")
+        .attr("class", "axisLeft")
+        .call(d3.axisLeft(y));     
 
-			svg.select(".axisRight") // change the y axis
-				.duration(750)
-				.call(d3.axisRight(y));
-		
-/*		
-      stack.offset(d3.stackOffsetNone);				
-      series = stack(data);	
-			
-      var layers = svg.selectAll(".layer")	
-				.remove()
-				.exit()
-				.data(series);		
+      svg.append("g")
+        .attr("class", "axisRight")
+        .attr("transform", "translate(" + width + ",0)")
+        .call(d3.axisRight(y));    
 
-        layers.enter().append("path")
-          .attr("cursor", "crosshair")
-          .attr("class", "layer")
-          .attr("d", function(d) {
-            return area(d); 
-          })
-          .style("fill", function(d, i) { return color(i); });
-*/
+      var val;
 
-
-
-				
-
-				
-/*				
-
-
-      svg = svg.selectAll(".layer");
-				
-      svg.selectAll(".layer")
-        .attr("opacity", 0.1);
-
-
-      svg.selectAll(".layer")
-        .attr("opacity", 1)
+      svg.selectAll(".line")
+        .attr("opacity", 0.7)
         .on("mouseover", function(d, i) {
-					console.log("sadsadad");
-          svg.selectAll(".layer").transition()
+          svg.selectAll(".line").transition()
           .duration(250)
           .attr("opacity", function(d, j) {
-            return j != i ? 0.4 : 1;
+            return j != i ? 0.3 : 0.7;
           })
         })
         .on("mousemove", function(d, i) {
@@ -396,61 +558,98 @@
           var invertedx = x.invert(mousex);
           year = invertedx.getYear() + 1900;
           month = invertedx.getMonth() + 1;
+          if (month < 10) {
+            month = "0" + month;
+          }
           day = invertedx.getDate();  
+          if (day < 10) {
+            day = "0" + day;
+          }
           invertedx =  "" + year + month + day;
           var selected = (d);
           for (var k = 0; k < selected.length; k++) {
             year = selected[k].data.day.getYear() + 1900;
             month = selected[k].data.day.getMonth() + 1;
+            if (month < 10) {
+              month = "0" + month;
+            }
             day = selected[k].data.day.getDate();
+            if (day < 10) {
+              day = "0" + day;
+            }            
             datearray[k] =  "" + year + month + day;
           }
           mousedate = datearray.indexOf(invertedx);
+          console.log(mousedate);
           if ( mousedate > -1) {
+            year = datearray[mousedate].substring(0, 4);
+            month = datearray[mousedate].substring(4, 6);
+            day = datearray[mousedate].substring(6, 8);            
             var val = d[mousedate][1] - d[mousedate][0];
             val = val.toFixed(1);
-            d3.select(this)
-              .classed("hover", true)
-              .attr("stroke-width", "5.5px"), 
-              tooltip.html( "<p>" + d.key + "<br>" + val + "</p>" ).style("visibility", "visible");
-          }
+            console.log(d.key + "  " + val);
+            divTooltip.transition()		
+              .duration(500)		
+              .style("opacity", .9);		
+            divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
+              .style("left", (d3.event.pageX) + "px")		
+              .style("top", (d3.event.pageY - 28) + "px");	
+          } else {
+            divTooltip.transition()		
+              .duration(100)		
+              .style("opacity", 0);		
+          }          
+          
         })
         .on("mouseout", function(d, i) {
           svg.selectAll(".layer")
             .transition()
             .duration(250)
-            .attr("opacity", "1");
-          d3.select(this)
-            .classed("hover", false)
-            .attr("stroke-width", "0px"), tooltip.html( "<p>" + d.key + "<br>" + val + "</p>" ).style("visibility", "hidden");
+            .attr("opacity", 0.8);
         }); 
 				
-
-*/					
+        d3.selectAll(".remove").remove().exit();
+          
+        vertical = d3.select("body").append("div")
+          .attr("class", "remove")
+          .style("position", "absolute")
+          .style("z-index", "20")
+          .style("width", "0.5px")
+          .style("height", (height-4) +  "px")
+          .style("top", (margin.top) + "px")
+          .style("bottom", margin.bottom + "px")
+          .style("background", "#fcfcfc");
+            
+        d3.select("svg") 
+        .on("mousemove", function(){ 
+          mousex = d3.mouse(this);
+          mousex = mousex[0] + 2;
+          vertical.style("left", mousex + "px" );
+        })
+        .on("mouseover", function(){ 
+          mousex = d3.mouse(this);
+          mousex = mousex[0] + 2;
+          vertical.style("left", mousex + "px");
+        });    
+                 
+        var curtain = svg.append('rect')
+          .attr('x', -0.99 * width)
+          .attr('y', -0.99 * height)
+          .attr('height', height)
+          .attr('width', width * 0.98)
+          .attr('class', 'curtain')
+          .attr("transform", "translate(" + width + "," + height + ")")  
+          .attr('transform', 'rotate(180)')
+          .style('fill', '#fcfcfc')    
+          .transition()
+            .delay(1000)
+            .duration(1500)          
+            .attr('width', 0);  
 			
-	//			.duration(2000)
-//				.attr("d", function(d) { return area(d); });
-				
-
-/*
-      svg.selectAll(".layer")
-        .data(series)
-        .enter().append("path")
-          .attr("cursor", "crosshair")
-          .attr("class", "layer")
-          .attr("d", function(d) {
-            return area(d); 
-          })
-          .style("fill", function(d, i) { return color(i); });
-
-*/
-				
-			
-			//alert('Hello world!!!!');
-					
-			console.log("?.?..?...");
-			
-		}
+    }
+		
+    streamGraph();  
+		createLegend();
             
   </script>
 </body>
