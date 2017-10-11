@@ -1,0 +1,147 @@
+
+body { 
+  margin:0;
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  left:0; 
+  font:10px sans-serif; 
+  min-width: 600px;
+
+}
+
+.axisLeft path, .axisLeft line, 
+.axisRight path, .axisRight line, 
+.axisBottom path, .axisBottom line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+
+.legend {
+  position: absolute;
+  width: 240px;
+  height: 150px;
+  background-color: hsla(0,0%,100%,.9);	
+  padding: 5px 10px 5px 10px;
+  border-radius: 5px;      
+}   
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  float: left;
+  margin-right: 8px;
+} 
+
+.legendTitle {
+  font:12px sans-serif;
+  font-weight:bold;  
+  margin-bottom: 2px;
+}
+
+.item {
+  font:10px sans-serif;
+  float:left;
+  margin-top: 5px;
+  margin-right:35px;
+}
+
+.line {
+  stroke-width: 6px;
+  fill: none;
+}    
+
+div.tooltip {	
+  position: absolute;			
+  text-align: center;			
+  width: 120px;					
+  height: 36px;					
+  padding: 2px;				
+  font: 10px sans-serif;		
+  background: lightgray;	
+  border: 0px;		
+  border-radius: 8px;			
+  pointer-events: none;			
+}    
+
+div.buttons  {
+  font:15px sans-serif;
+  font-weight:bold;  
+  position: absolute;
+  left: 10%;
+}    
+
+.parcoords {
+  display: block;
+}
+
+.parcoords svg,
+.parcoords canvas {
+  font: 10px sans-serif;
+  position: absolute;
+}
+
+.parcoords canvas {
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.axis .title {
+  font-size: 10px;
+  transform: rotate(-21deg) translate(-5px,-6px);
+  fill: #222;
+}
+
+.axis line,
+.axis path {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 0.5px;
+}
+
+.axis .tick text {
+  fill: #222;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.axis.medio .tick text,
+.axis.firma .tick text {
+  opacity: 1;
+}
+
+.axis:hover line,
+.axis:hover path,
+.axis.active line,
+.axis.active path {
+  fill: none;
+  stroke: #222;
+  stroke-width: 1px;
+}
+
+.axis:hover .title {
+  font-weight: bold;
+}
+
+.axis:hover .tick text {
+  opacity: 1;
+}
+
+.axis.active .title {
+  font-weight: bold;
+}
+
+.axis.active .tick text {
+  opacity: 1;
+  font-weight: bold;
+}
+
+.brush .extent {
+  fill-opacity: .4;
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
