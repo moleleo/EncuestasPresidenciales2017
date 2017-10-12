@@ -274,7 +274,7 @@
 				
       d3.select("svg").remove().exit();
 
-      svg = d3.select("#chart").append("svg")
+      svg = d3.select("#timeChart").append("svg")
         .attr("width", width + (margin.left*2))
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -439,7 +439,7 @@
 				
       d3.select("svg").remove().exit();
 
-      svg = d3.select("#chart").append("svg")
+      svg = d3.select("#timeChart").append("svg")
         .attr("width", width + (margin.left*2))
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
