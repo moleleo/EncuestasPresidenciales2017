@@ -4,8 +4,15 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/d3.v4.min.js"></script>
   <script src="js/render-queue.js"></script>
+  <title>VA UNIANDES - ¿Mienten las encuestas presidenciales?</title>
 </head>
 <body>
+  <h2 align="center">Dime quÃ© estrato tienes y te dirÃ© el tipo de vivienda que habitas</h2>
+  <br></br>
+  <p>¿Es usted uno de esos colombianos que se alegra porque su candidato apareció primero en la más reciente encuesta presidencial? ¿Es usted de los que decide por quién votar mirando los resultados de las últimas encuestas? Tenga mucho cuidado, usted puede estar siendo manipulado sin ser consciente de ello.</p>
+  <p>A continuación se muestran los resultados de las últimas 5 encuestas presidenciales pagadas y publicadas por grandes medios de comunicación.</p>
+  <p>Usted puede visualizar la información de diferentes formas, simplemente debe hacer click en alguna de las opciones que aparecen más abajo.</p>
+  <br>
   <div id="timeChartDiv" class="timeChartDiv"></div>
   <br>
   <div id="buttonsDiv" class="buttonsDiv">
@@ -16,9 +23,32 @@
     </div>
     <div id="buttons_" class="buttons_"></div>   
   </div>
-  <br>
-  <br>
+  <br></br>  
+  <p>En las dos primeras opciones de la visualización anterior parece que Sergio Fajardo ha ganado popularidad, y que la indesición de los votantes ha disminuido. Pero la realidad está un poco alejada de estas afirmaciones. Revisando la metodología de la encuesta, se observa que en ella no se tuvo en cuenta el 8% de personas que no escogieron ningún candidato o simplemente no respondieron. Si este porcentaje se hubiese tenido en cuenta, los porcentajes atribuidos a todos los candidatos serían menores, especialmente el de Sergio Fajardo, ya que esta practica aumenta en mayor proporción los porcentajes de los candidatos más votados.</p>
+  <br></br>
+  <p>A continuación tenemos otra visualización que nos permite consultar cómo le fué en las encuestas los candidatos, según la firma consultora que realizó la encuesta y el medio que la publicó.</p>
+  <p>Para filtrar la información usted puede seleccionar el rango de información de su interés en cada uno de los ejes de la visualización</p>
+  <br></br>
   <div id="pcChart" ></div>
+  <p>En la anterior visualización destacan los siguientes elementos:</p>
+  <p>- Las encuestas publicadas por el Diario El Tiempo son las únicas que dan como ganador a Gustavo Petro.</p>
+  <p>- La encuesta en la que peor le fue a Gustavo Petro fue publicada por RCN Radio y RCN Televisión.</p>  
+  <p>- La encuesta en la que mejor le fue a Clara Lopez fue publicada por el Diario El Tiempo.</p>  
+  <p>- La encuesta publicada por la revista semana (la última en publicarse) da como ganador a Sergio Fajardo.</p>
+  <p>- La encuesta publicada por RCN Radio y RCN Televisión es la única que da como ganador a Germán Vargas Lleras.</p>
+  <p>- La opción "No sabe - No Responde" encabeza los porcentajes en 4 de 5 encuestas.</p>
+  <br></br>
+  <p>Y usted ¿A quién le cree?</p>
+  <br></br>    
+  <p>Información tomada de:</p>
+  <p><a target="_blank" href="http://images.etn.eltiempo.digital/uploads/files/2017/08/02/Encuesta%20Pulso%20Pais%20-%20JunioJulio%202017.pdf">Diario El Tiempo - Encuesta Pulso País (Datexco) - 2 de Agosto de 2.017</a></p>
+  <p><a target="_blank" href="http://cifrasyconceptos.com/wp-content/uploads/2017/08/Presentaci%C3%B3n-final-Polim%C3%A9trica-agosto_v2.pdf?8ab3a8">Caracol radio - Encuesta Polimétrica (Cifras & Conceptos) - 3 de Agosto de 2.017</a></p>
+  <p><a target="_blank" href=""></a></p>
+  <p><a target="_blank" href="http://images.etn.eltiempo.digital/uploads/files/2017/09/11/Encuesta%20Pulso%20Pais%20-%20Medicion%20Agosto%20de%202017.pdf">Diario El Tiempo - Encuesta Pulso País (Datexco) - 12 de Septiembre de 2.017</a></p>
+  <p><a target="_blank" href="http://www.rcnradio.com/noticias/quien-lidera-las-preferencias-presidenciales-en-la-gran-encuesta/">RCN Radio, RCN Televisión y Periódicos Asociados - Gran Encuesta (Yanhaas) - 20 de Septiembre de 2017</a></p>
+  <p><a target="_blank" href="http://static.iris.net.co/semana/upload/documents/gran-encuesta-mayo-17.pdf">Revista Semana - Gran Encuesta presidenciales 2018 (Invamer) - 28 de Septiembre de 2017</a></p>
+  
+  <br></br>  
 	<div align="center" width="100%">
 		<br/>
 		<br/>
@@ -223,30 +253,6 @@
             .duration(250)
             .attr("opacity", 0.8);
         }); 
-				        
-        d3.selectAll(".remove").remove().exit();
-          
-        vertical = d3.select("body").append("div")
-          .attr("class", "remove")
-          .style("position", "absolute")
-          .style("z-index", "20")
-          .style("width", "0.5px")
-          .style("height", (height-4) +  "px")
-          .style("top", (margin.top) + "px")
-          .style("bottom", margin.bottom + "px")
-          .style("background", "#fcfcfc");
-             
-        d3.select("svg") 
-        .on("mousemove", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px" );
-        })
-        .on("mouseover", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px");
-        });    
         
         var curtain = svg.append('rect')
           .attr('x', -1 * width)
@@ -392,31 +398,6 @@
             .duration(250)
             .attr("opacity", 0.8);
         }); 
-				
-        d3.selectAll(".remove").remove().exit();
-          
-        vertical = d3.select("body").append("div")
-          .attr("class", "remove")
-          .style("position", "absolute")
-          .style("z-index", "20")
-          .style("width", "0.5px")
-          .style("height", (height-4) +  "px")
-          .style("top", (margin.top) + "px")
-          .style("bottom", margin.bottom + "px")
-          .style("background", "#fcfcfc");
-            
-        d3.select("svg") 
-        .on("mousemove", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px" );
-        })
-        .on("mouseover", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px");
-        });    
-
         
         var curtain = svg.append('rect')
           .attr('x', -1 * width)
@@ -560,31 +541,7 @@
             .duration(250)
             .attr("opacity", 0.8);
         }); 
-				
-        d3.selectAll(".remove").remove().exit();
-          
-        vertical = d3.select("body").append("div")
-          .attr("class", "remove")
-          .style("position", "absolute")
-          .style("z-index", "20")
-          .style("width", "0.5px")
-          .style("height", (height-4) +  "px")
-          .style("top", (margin.top) + "px")
-          .style("bottom", margin.bottom + "px")
-          .style("background", "#fcfcfc");
-            
-        d3.select("svg") 
-        .on("mousemove", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px" );
-        })
-        .on("mouseover", function(){ 
-          mousex = d3.mouse(this.parentNode.parentNode);
-          mousex = mousex[0] - 5;
-          vertical.style("left", mousex + "px");
-        });    
-                 
+				                 
         var curtain = svg.append('rect')
           .attr('x', -1 * width)
           .attr('y', -0.998 * height)
@@ -646,7 +603,6 @@
           type: types["String"],
           axis: d3.axisLeft()
             .tickFormat(function(d,i) {
-              console.log(d);
               return d;
             })
         },
