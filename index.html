@@ -6,15 +6,31 @@
   <script src="js/render-queue.js"></script>
 </head>
 <body>
-  <div id="timeChart"></div>
+  <div id="timeChartDiv" class="timeChartDiv"></div>
   <br>
-  <div id="buttons" class="buttons">Ver información como:     
-    <button type="button" onclick="streamGraph()">Stream Graph</button>
-    <button type="button" onclick="stackedArea()">Stacked Area</button>
-    <button type="button" onclick="areaChart()">Area Chart</button>
+  <div id="buttonsDiv" class="buttonsDiv">
+    <div id="buttons" class="buttons">Ver información como:     
+      <button type="button" onclick="streamGraph()">Stream Graph</button>
+      <button type="button" onclick="stackedArea()">Stacked Area</button>
+      <button type="button" onclick="areaChart()">Area Chart</button>
+    </div>
+    <div id="buttons_" class="buttons_"></div>   
   </div>
   <br>
-  <div id="pcChart"></div>
+  <br>
+  <div id="pcChart" ></div>
+	<div align="center" width="100%">
+		<br/>
+		<br/>
+		<h4>
+			Leonardo Montero Leguizamón<br/>
+			cod. 201629349<br/>
+			Maestría en Ingeniería de Información (Master of Information Engineering)<br/>
+			Visual Analytics (ISIS 4822) - Fall 2017<br/> 
+			Bogotá D.C.<br/>  
+			Colombia
+		</h4>
+	</div>  
   <script>
 
 		var svg; 
@@ -37,9 +53,9 @@
 			{day: new Date(2017, 8, 28.2), "Sergio Fajardo": 21,    "Germán Vargas Lleras": 12.5, "Claudia Lopez": 11.2,  "Gustavo Petro":10.2, "Juan Manuel Galán":8.8,  "Clara Lopez":3.2,  "No Sabe - No Responde": 0}
 		]; 
 	
-		var margin = {top: 20, right: 450, bottom: 30, left: 50};
+		var margin = {top: 15, right: 10, bottom: 20, left: 45};
 
-		var width = document.body.clientWidth - margin.left - margin.right;
+		var width = 750 - margin.left - margin.right;
 		var height = 350 - margin.top - margin.bottom;    
     
     var line = d3.line()
@@ -61,11 +77,11 @@
 		function createLegend() {
 		
       var legend = [];
+      
+      d3.select("#timeChartDiv").selectAll(".legend").remove();
 			
-      d3.select("#timeChart").append("div")
+      d3.select("#timeChartDiv").append("div")
         .attr("class", "legend")
-        .style("top", "65px")
-        .style("right", "150px") 
         .append("div")
           .attr("class", "legendTitle")
           .text("Candidato");
@@ -85,7 +101,7 @@
           .attr("class", "swatch")
           .style("background",  d.color);
       });   
-			
+      			
 		}
 	
     function streamGraph( ) { 
@@ -108,12 +124,14 @@
         .range([height-5, 0]);
 				
       d3.select("svg").remove().exit();
-        
-      svg = d3.select("#timeChart").append("svg")
-        .attr("width", width + (margin.left*2))
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+
+      svg = d3.select("#timeChartDiv").append("div")
+        .attr("class", "timeChart")
+        .append("svg")
+          .attr("width", width + (margin.left*2))
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
 
       svg.selectAll(".layer")
         .data(series)
@@ -178,19 +196,21 @@
             datearray[k] =  "" + year + month + day;
           }
           mousedate = datearray.indexOf(invertedx);
+          
           if ( mousedate > -1) {
+            
             year = datearray[mousedate].substring(0, 4);
             month = datearray[mousedate].substring(4, 6);
             day = datearray[mousedate].substring(6, 8);            
-            
+           
             var val = d[mousedate][1] - d[mousedate][0];
             val = val.toFixed(1);
             divTooltip.transition()		
               .duration(500)		
               .style("opacity", .9);		
             divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
-              .style("left", (d3.event.pageX) + "px")		
-              .style("top", (d3.event.pageY - 28) + "px");	
+              .style("left", (d3.event.pageX + 10) + "px")		
+              .style("top", (d3.event.pageY - 45) + "px");              
           } else {
             divTooltip.transition()		
               .duration(100)		
@@ -203,7 +223,7 @@
             .duration(250)
             .attr("opacity", 0.8);
         }); 
-				
+				        
         d3.selectAll(".remove").remove().exit();
           
         vertical = d3.select("body").append("div")
@@ -215,24 +235,24 @@
           .style("top", (margin.top) + "px")
           .style("bottom", margin.bottom + "px")
           .style("background", "#fcfcfc");
-            
+             
         d3.select("svg") 
         .on("mousemove", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 5;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px" );
         })
         .on("mouseover", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 5;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px");
         });    
-                 
+        
         var curtain = svg.append('rect')
-          .attr('x', -0.99 * width)
-          .attr('y', -0.99 * height)
+          .attr('x', -1 * width)
+          .attr('y', -0.998 * height)
           .attr('height', height)
-          .attr('width', width * 0.98)
+          .attr('width', width * 0.9985)
           .attr('class', 'curtain')
           .attr("transform", "translate(" + width + "," + height + ")")  
           .attr('transform', 'rotate(180)')
@@ -241,7 +261,9 @@
             .delay(1000)
             .duration(1500)          
             .attr('width', 0);  
-			
+            
+      createLegend();
+
     }
 	
     function stackedArea( ) { 
@@ -265,7 +287,7 @@
       series = stack(data);
               
       x = d3.scaleTime()
-        .domain([new Date(2017, 7, 1), new Date(2017, 8, 30)])
+        .domain([new Date(2017, 7, 1), new Date(2017, 8, 29.2)])
         .range([0, width]);
 
       y = d3.scaleLinear()
@@ -274,11 +296,13 @@
 				
       d3.select("svg").remove().exit();
 
-      svg = d3.select("#timeChart").append("svg")
-        .attr("width", width + (margin.left*2))
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+      svg = d3.select("#timeChartDiv").append("div")
+        .attr("class", "timeChart")
+        .append("svg")
+          .attr("width", width + (margin.left*2))
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
 
       svg.selectAll(".layer")
         .data(series)
@@ -354,8 +378,8 @@
               .duration(500)		
               .style("opacity", .9);		
             divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
-              .style("left", (d3.event.pageX) + "px")		
-              .style("top", (d3.event.pageY - 28) + "px");	
+              .style("left", (d3.event.pageX + 10) + "px")		
+              .style("top", (d3.event.pageY - 45) + "px");              
           } else {
             divTooltip.transition()		
               .duration(100)		
@@ -383,21 +407,22 @@
             
         d3.select("svg") 
         .on("mousemove", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 5;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px" );
         })
         .on("mouseover", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 5;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px");
         });    
-                 
+
+        
         var curtain = svg.append('rect')
-          .attr('x', -0.99 * width)
-          .attr('y', -0.99 * height)
+          .attr('x', -1 * width)
+          .attr('y', -0.998 * height)
           .attr('height', height)
-          .attr('width', width * 0.98)
+          .attr('width', width * 0.9985)
           .attr('class', 'curtain')
           .attr("transform", "translate(" + width + "," + height + ")")  
           .attr('transform', 'rotate(180)')
@@ -406,7 +431,9 @@
             .delay(1000)
             .duration(1500)          
             .attr('width', 0);  
-			
+
+      createLegend();
+      
     }
 	
     function areaChart( ) { 
@@ -430,7 +457,7 @@
       series = stack(data);
               
       x = d3.scaleTime()
-        .domain([new Date(2017, 7, 1), new Date(2017, 8, 30)])
+        .domain([new Date(2017, 7, 1), new Date(2017, 8, 29.2)])
         .range([0, width]);
 
       y = d3.scaleLinear()
@@ -438,12 +465,14 @@
         .range([height-5, 0]);
 				
       d3.select("svg").remove().exit();
-
-      svg = d3.select("#timeChart").append("svg")
-        .attr("width", width + (margin.left*2))
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+          
+      svg = d3.select("#timeChartDiv").append("div")
+        .attr("class", "timeChart")
+        .append("svg")
+          .attr("width", width + (margin.left*2))
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
 
       svg.selectAll(".line")    
         .data(series)
@@ -516,8 +545,8 @@
               .duration(500)		
               .style("opacity", .9);		
             divTooltip.html( d.key + "<br/>" +  monthNames[parseInt(month)-1] + " " + day + " - " + year  + "<br/>" + val + " de intención" )	
-              .style("left", (d3.event.pageX) + "px")		
-              .style("top", (d3.event.pageY - 28) + "px");	
+              .style("left", (d3.event.pageX + 10) + "px")		
+              .style("top", (d3.event.pageY - 45) + "px");              
           } else {
             divTooltip.transition()		
               .duration(100)		
@@ -546,21 +575,21 @@
             
         d3.select("svg") 
         .on("mousemove", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 2;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px" );
         })
         .on("mouseover", function(){ 
-          mousex = d3.mouse(this);
-          mousex = mousex[0] + 2;
+          mousex = d3.mouse(this.parentNode.parentNode);
+          mousex = mousex[0] - 5;
           vertical.style("left", mousex + "px");
         });    
                  
         var curtain = svg.append('rect')
-          .attr('x', -0.99 * width)
-          .attr('y', -0.99 * height)
+          .attr('x', -1 * width)
+          .attr('y', -0.998 * height)
           .attr('height', height)
-          .attr('width', width * 0.98)
+          .attr('width', width * 0.9985)
           .attr('class', 'curtain')
           .attr("transform", "translate(" + width + "," + height + ")")  
           .attr('transform', 'rotate(180)')
@@ -569,14 +598,16 @@
             .delay(1000)
             .duration(1500)          
             .attr('width', 0);  
-			
+
+      createLegend();
+            
     }
     
     function pcGraph(){
 
-      var margin = {top: 66, right: 110, bottom: 20, left: 188},
-          width = document.body.clientWidth - margin.left - margin.right,
-          height = 340 - margin.top - margin.bottom,
+      var margin = {top: 50, right: 200, bottom: 20, left: 350},
+          width = 1300 - margin.left - margin.right,
+          height = 350 - margin.top - margin.bottom,
           innerHeight = height - 2;
 
       var devicePixelRatio = window.devicePixelRatio || 1;
@@ -615,6 +646,7 @@
           type: types["String"],
           axis: d3.axisLeft()
             .tickFormat(function(d,i) {
+              console.log(d);
               return d;
             })
         },
@@ -733,8 +765,8 @@
         axes.append("g")
             .each(function(d) {
               var renderAxis = "axis" in d
-                ? d.axis.scale(d.scale)  // custom axis
-                : yAxis.scale(d.scale);  // default axis
+                ? d.axis.scale(d.scale) 
+                : yAxis.scale(d.scale);  
               d3.select(this).call(renderAxis);
             })
           .append("text")
@@ -843,8 +875,8 @@
 
     }
     
-    streamGraph();  
-		createLegend();
+    streamGraph();
+    //areaChart();
     pcGraph();
             
   </script>

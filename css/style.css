@@ -1,14 +1,12 @@
 
 body { 
   margin:0;
-  position:fixed;
   top:0;
   right:0;
   bottom:0;
   left:0; 
   font:10px sans-serif; 
   min-width: 600px;
-
 }
 
 .axisLeft path, .axisLeft line, 
@@ -17,17 +15,26 @@ body {
   fill: none;
   stroke: #000;
   stroke-width: 2px;
-  shape-rendering: crispEdges;
 }
 
+.timeChartDiv, .buttonsDiv {
+  text-align: center;
+}
+
+.timeChart {
+  display: inline-block;  
+  vertical-align: top;
+} 
+
 .legend {
-  position: absolute;
-  width: 240px;
+  display: inline-block; 
+  margin: 50px;  
+  width: 200px;
   height: 150px;
   background-color: hsla(0,0%,100%,.9);	
   padding: 5px 10px 5px 10px;
   border-radius: 5px;      
-}   
+}  
 
 .swatch {
   width: 14px;
@@ -39,10 +46,12 @@ body {
 .legendTitle {
   font:12px sans-serif;
   font-weight:bold;  
+  text-align: center;
   margin-bottom: 2px;
 }
 
 .item {
+  display: table-cell; 
   font:10px sans-serif;
   float:left;
   margin-top: 5px;
@@ -68,10 +77,16 @@ div.tooltip {
 }    
 
 div.buttons  {
-  font:15px sans-serif;
+  display: inline-block;  
+  vertical-align: top;
+  font:13px sans-serif;
   font-weight:bold;  
-  position: absolute;
-  left: 10%;
+  width: 785px;
+}    
+
+div.buttons_  {
+  display: inline-block;  
+  width: 300px;
 }    
 
 .parcoords {
